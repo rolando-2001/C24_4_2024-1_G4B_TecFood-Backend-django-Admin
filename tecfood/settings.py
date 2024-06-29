@@ -232,12 +232,7 @@ if not DEBUG:
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 
-cloudinary.config(
-  cloud_name =config('cloud_name'),
-  api_key = config('api_key',cast=int),
-  api_secret = config('api_secret')
-    
-)
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
