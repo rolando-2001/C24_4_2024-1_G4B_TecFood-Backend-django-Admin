@@ -33,12 +33,23 @@ from datetime import timedelta
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*3o3z_tq45&#9+n2_8rc_4ghbf=g+3-w81fw0k^tmfh$wt5zv_'
+#SECRET_KEY = 'django-insecure-*3o3z_tq45&#9+n2_8rc_4ghbf=g+3-w81fw0k^tmfh$wt5zv_'
+#local
+SECRET_KEY = os.environ.get('SECRET_KEY', default='your secret key')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+
+##local
+#DEBUG = True
+
+DEBUG = 'RENDER' not in os.environ
+
 
 ALLOWED_HOSTS = []
+#agregando el host de render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -112,6 +123,7 @@ SIMPLE_JWT = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,6 +158,7 @@ WSGI_APPLICATION = 'tecfood.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 ################## DATABASE CONFIGURATION ##################
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -155,6 +168,10 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     }
+}'''
+
+DATABASES = {
+    'default': dj_database_url.config()
 }
 
 # Password validation
@@ -200,8 +217,19 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+if not DEBUG:
+        # Tell Django to copy statics to the `staticfiles` directory
+    # in your application directory on Render.
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Turn on WhiteNoise storage backend that takes care of compressing static files
+    # and creating unique names for each version so they can safely be cached forever.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 
 cloudinary.config(
@@ -210,6 +238,7 @@ cloudinary.config(
   api_secret = config('api_secret')
     
 )
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
